@@ -13,7 +13,7 @@ import "./BirthdaySurprise.css";
  * Change the year if you re-use this for another year.
  * Note: this is only checked in the browser — not secure against devtools / clock changes.
  */
-const BIRTHDAY_UNLOCK = new Date(2026, 3, 26, 0, 0, 0, 0);
+const BIRTHDAY_UNLOCK = new Date(2026, 3, 27, 0, 0, 0, 0);
 
 function isPastUnlock() {
   return Date.now() >= BIRTHDAY_UNLOCK.getTime();
