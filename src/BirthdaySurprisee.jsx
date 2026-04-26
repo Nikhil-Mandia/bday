@@ -7,40 +7,18 @@ import React, {
   useState,
 } from "react";
 import "./BirthdaySurprise.css";
-import img1 from "./img/1.jpeg";
-import img2 from "./img/2.jpeg";
-import img3 from "./img/3.jpeg";
-import img4 from "./img/4.jpeg";
-import img5 from "./img/5.jpeg";
-import img6 from "./img/6.jpeg";
-import img7 from "./img/7.jpeg";
-import img8 from "./img/8.jpeg";
 
 /**
- * ─────────────────────────────────────────────────────────────────────────────
- *  PERSONALISE THESE ↓
- * ─────────────────────────────────────────────────────────────────────────────
- *  1. Change BIRTHDAY_UNLOCK to the correct date
- *  2. Replace COUPLE_PHOTOS with real URLs / base64 / imported images
- *     (or leave as null to hide the gallery)
- *  3. Edit HER_NAME, REASONS, LETTER_BODY to make it fully yours
- * ─────────────────────────────────────────────────────────────────────────────
+ * Surprise unlocks at the **start of this calendar day** (local time on your device).
+ * Change the year if you re-use this for another year.
+ * Note: this is only checked in the browser — not secure against devtools / clock changes.
  */
-const BIRTHDAY_UNLOCK = new Date(2026, 3, 27, 0, 0, 0, 0); // April 27 2026
-const HER_NAME = "My Love"; // e.g. "Priya"
-
-/**
- * Add your photo URLs here — max 6 look best.
- * Set to null or [] to hide the gallery entirely.
- * Example:
- *   { src: "https://…/photo.jpg", caption: "Our first trip ♡" }
- */
-const COUPLE_PHOTOS = null; // ← replace with your photo array when ready
+const BIRTHDAY_UNLOCK = new Date(2026, 3, 27, 0, 0, 0, 0);
 
 function isPastUnlock() {
   return Date.now() >= BIRTHDAY_UNLOCK.getTime();
 }
-
+// asdfsadfsadfasfdasfdasfdsafdasdfasdf
 function useUnlockState() {
   const [unlocked, setUnlocked] = useState(() => isPastUnlock());
   useEffect(() => {
@@ -49,16 +27,15 @@ function useUnlockState() {
       return undefined;
     }
     const id = window.setInterval(() => {
-      if (isPastUnlock()) setUnlocked(true);
+      if (isPastUnlock()) {
+        setUnlocked(true);
+      }
     }, 1000);
     return () => window.clearInterval(id);
   }, []);
   return unlocked;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COUNTDOWN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 function CountdownToBirthday() {
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -66,11 +43,14 @@ function CountdownToBirthday() {
     return () => window.clearInterval(id);
   }, []);
 
-  const diff = Math.max(0, BIRTHDAY_UNLOCK.getTime() - Date.now());
+  const target = BIRTHDAY_UNLOCK.getTime();
+  const now = Date.now();
+  const diff = Math.max(0, target - now);
   const days = Math.floor(diff / 864e5);
   const hours = Math.floor((diff % 864e5) / 36e5);
   const minutes = Math.floor((diff % 36e5) / 6e4);
   const seconds = Math.floor((diff % 6e4) / 1e3);
+
   const n2 = (n) => String(n).padStart(2, "0");
   const dateLabel = BIRTHDAY_UNLOCK.toLocaleDateString(undefined, {
     weekday: "long",
@@ -91,24 +71,33 @@ function CountdownToBirthday() {
         </p>
         <p className="birthday-locked-date">{dateLabel}</p>
         <div className="countdown-grid" role="timer" aria-live="polite">
-          {[
-            ["days", days < 10 ? n2(days) : days],
-            ["hours", n2(hours)],
-            ["min", n2(minutes)],
-            ["sec", n2(seconds)],
-          ].map(([lbl, val], i, arr) => (
-            <React.Fragment key={lbl}>
-              <div className="countdown-box">
-                <span className="countdown-value">{val}</span>
-                <span className="countdown-label">{lbl}</span>
-              </div>
-              {i < arr.length - 1 && (
-                <div className="countdown-sep" aria-hidden>
-                  :
-                </div>
-              )}
-            </React.Fragment>
-          ))}
+          <div className="countdown-box">
+            <span className="countdown-value">
+              {days < 10 ? n2(days) : String(days)}
+            </span>
+            <span className="countdown-label">days</span>
+          </div>
+          <div className="countdown-sep" aria-hidden>
+            :
+          </div>
+          <div className="countdown-box">
+            <span className="countdown-value">{n2(hours)}</span>
+            <span className="countdown-label">hours</span>
+          </div>
+          <div className="countdown-sep" aria-hidden>
+            :
+          </div>
+          <div className="countdown-box">
+            <span className="countdown-value">{n2(minutes)}</span>
+            <span className="countdown-label">min</span>
+          </div>
+          <div className="countdown-sep" aria-hidden>
+            :
+          </div>
+          <div className="countdown-box">
+            <span className="countdown-value">{n2(seconds)}</span>
+            <span className="countdown-label">sec</span>
+          </div>
         </div>
         <p className="birthday-locked-hint">
           Until then, this page stays a secret. ♡
@@ -118,9 +107,6 @@ function CountdownToBirthday() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DATA
-// ─────────────────────────────────────────────────────────────────────────────
 const BALLOON_MSGS = [
   { emoji: "💌", text: "You are my favourite notification." },
   { emoji: "🌹", text: "Every day with you is my best day." },
@@ -128,6 +114,7 @@ const BALLOON_MSGS = [
   { emoji: "🦋", text: "My heart still skips when I see you." },
   { emoji: "🌙", text: "I fall for you more every single night." },
 ];
+
 const BALLOON_COLORS = [
   "#e8446e",
   "#ff6b9d",
@@ -148,24 +135,25 @@ const REASONS = [
   ["05", "Every moment with you still feels like the best moment of my day."],
 ];
 
+/** Shown when the wheel always lands on ME! — a different message each spin */
 const WHEEL_PRIZE_MESSAGES = [
   {
     emoji: "👨‍❤️‍👩",
     lead: "You got…",
     prize: "ME!",
-    sub: "The wheel isn't wrong — the universe just agrees with me. You're my prize, every time. ♡",
+    sub: "The wheel isn’t wrong — the universe just agrees with me. You’re my prize, every time. ♡",
   },
   {
     emoji: "🌹",
-    lead: "Lucky you — it's",
+    lead: "Lucky you — it’s",
     prize: "ME",
-    sub: "Every spin, every time. My heart was rigged for you the day we met. ♡",
+    sub: "Every spin, every time. Some things aren’t left to chance — you’re the reason I still believe in fate. ♡",
   },
   {
     emoji: "✨",
-    lead: "No surprise: it's",
+    lead: "No surprise: it’s",
     prize: "ME!",
-    sub: "Rigged? Maybe. But my heart was rigged for you the day we met. I'd choose you in every life. ♡",
+    sub: "Rigged? Maybe. But my heart was rigged for you the day we met. I’d choose you in every life. ♡",
   },
   {
     emoji: "💫",
@@ -175,42 +163,45 @@ const WHEEL_PRIZE_MESSAGES = [
   },
   {
     emoji: "💋",
-    lead: "Forever, it's",
+    lead: "Forever, it’s",
     prize: "ME & YOU",
-    sub: "The wheel whispers what I scream in my head: I'm not going anywhere, love. We're the jackpot. ♡",
+    sub: "The wheel whispers what I scream in my head: I’m not going anywhere, love. We’re the jackpot. ♡",
   },
   {
     emoji: "🤍",
     lead: "Your soul prize:",
     prize: "ME",
-    sub: "I'd let you 'win' this a thousand times. You are my favourite plot twist, my home, my always. ♥",
+    sub: "I’d let you “win” this a thousand times. You are my favourite plot twist, my home, my always. ♡",
   },
 ];
 
+/** After the love meter shatters at 100% — romantic “infinite” lines */
+const METER_SPARK_COUNT = 22;
+
 const METER_INFINITE_MESSAGES = [
   {
-    gasp: "Oh no… the meter can't take it",
-    line: "Your love doesn't stop at 100% — it goes on forever, past every line I could ever draw. ♡",
+    gasp: "Oh no… the meter can’t take it",
+    line: "Your love doesn’t stop at 100% — it goes on forever, past every line I could ever draw. ♡",
   },
   {
     gasp: "Error: infinite love detected",
-    line: "The gauge broke, but I'm not even surprised. My love for you was never made to be measured. ♡",
+    line: "The gauge broke, but I’m not even surprised. My love for you was never made to be measured. ♡",
   },
   {
     gasp: "It shattered… in the best way",
-    line: "There isn't a bar long enough in this world. What I feel for you is endless. ♡",
+    line: "There isn’t a bar long enough in this world. What I feel for you is endless, and I still find new ways to love you. ♡",
   },
   {
     gasp: "100%? That was just the start",
-    line: "You overflow every boundary — in my heart, in my days, in every small moment we share. ♡",
+    line: "You overflow every boundary — in my heart, in my days, in every small moment we share. Infinite doesn’t even cover it. ♡",
   },
   {
     gasp: "The numbers gave up on us",
-    line: "They were never going to be enough. You are more than a percentage — you're my every tomorrow. ♡",
+    line: "They were never going to be enough. You are more than a percentage — you’re my every tomorrow. ♡",
   },
   {
-    gasp: "Oops — the meter's gone eternal",
-    line: "All that love had nowhere to go but everywhere. I'm still falling, and there's no bottom. ♡",
+    gasp: "Oops — the meter’s gone eternal",
+    line: "All that love had nowhere to go but everywhere. I’m still falling for you, and there’s no bottom. ♡",
   },
 ];
 
@@ -220,77 +211,44 @@ const WHEEL_SLICE_DATA = [
   { label: "🍫 Chocolate", color: "#ff6b9d", deg: 52 },
   { label: "💐 Bouquet", color: "#7a1030", deg: 52 },
   { label: "💎 Jewellery", color: "#c0244e", deg: 52 },
-  { label: "🧸 Teddy", color: "#6b1236", deg: 30 },
-  { label: "🎂 Cake", color: "#d0305a", deg: 52 },
+  { label: "🧸 Teddy", color: "#6b1236", deg: 52 },
+  { label: "🎂 Cake", color: "#d0305a", deg: 30 },
   { label: "ME!", color: "#ff9bb5", deg: 16, isMe: true },
 ];
 
-const QUIZ_QUESTIONS = [
-  {
-    q: "What does he think every time he looks at you?",
-    opts: ["She's pretty", "I'm so lucky", "I love her", "All of the above ♡"],
-    correct: 3,
-    win: "Yes! ALL of the above — always, every single time. ♡",
-    lose: "Close! But it's ALL of the above — always. ♡",
-  },
-  {
-    q: "If he could give you one gift forever, what would it be?",
-    opts: ["Diamonds 💎", "Travel ✈️", "Every happy day", "His whole heart ♡"],
-    correct: 3,
-    win: "Of course — you already have it. You've had it since day one. ♡",
-    lose: "His answer: his whole heart — you've had it since day one. ♡",
-  },
-  {
-    q: "How often does he think about you?",
-    opts: ["Sometimes", "Often", "Very often", "Every single moment ♡"],
-    correct: 3,
-    win: "Every. Single. Moment. You live in his mind rent-free. ♡",
-    lose: "Every single moment — you live in his mind rent-free. ♡",
-  },
-];
+const SIZE = 270;
+const cx = 135;
+const cy = 135;
+const R = 128;
 
-const WISH_PILL_MESSAGES = [
-  "Your name is the shape my prayers take. ♡",
-  "If I could name one star, it would be yours. ✦",
-  "In every world I'd still find the road back to you.",
-  "This love isn't a feeling — it's a law of my universe. ♡",
-  "The night sky learned how to smile when it saw you. ✦",
-  "Forever is only the first word. The rest I whisper to you. ♡",
-];
-
-const SECRET_ROSE_BLESSING =
-  "You weren't just meant to be held — you were meant to be held like this, like forever isn't long enough. ✦";
-const METER_SPARK_COUNT = 22;
-const SIZE = 270,
-  cx = 135,
-  cy = 135,
-  R = 128;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 function polar(deg, r) {
   const rad = ((deg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
+
 function arcPath(s, e) {
-  const p1 = polar(s, R),
-    p2 = polar(e, R);
+  const p1 = polar(s, R);
+  const p2 = polar(e, R);
   const large = e - s > 180 ? 1 : 0;
   return `M${cx},${cy} L${p1.x},${p1.y} A${R},${R} 0 ${large},1 ${p2.x},${p2.y} Z`;
 }
+
 function buildWheelSlices() {
+  const slices = [];
   let cum = 0;
-  return WHEEL_SLICE_DATA.map((s) => {
-    const slice = { ...s, start: cum, end: cum + s.deg, mid: cum + s.deg / 2 };
+  WHEEL_SLICE_DATA.forEach((s) => {
+    slices.push({
+      ...s,
+      start: cum,
+      end: cum + s.deg,
+      mid: cum + s.deg / 2,
+    });
     cum += s.deg;
-    return slice;
   });
+  return slices;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
+/** White envelope with red heart — centered on the envelope (seal) */
 function EnvelopeWithHeart() {
   return (
     <svg
@@ -300,6 +258,7 @@ function EnvelopeWithHeart() {
       height="56"
       aria-hidden
     >
+      <title>Letter seal</title>
       <path
         fill="#faf8fa"
         stroke="#141018"
@@ -340,10 +299,11 @@ function Petals() {
     () =>
       Array.from({ length: 18 }, (_, i) => {
         const w = 10 + Math.random() * 8;
+        const h = w * 1.4;
         return {
           id: i,
           w,
-          h: w * 1.4,
+          h,
           left: 5 + Math.random() * 90,
           hue: 340 + Math.random() * 20,
           light: 56 + Math.random() * 16,
@@ -354,6 +314,7 @@ function Petals() {
       }),
     [],
   );
+
   return (
     <div className="petals" aria-hidden>
       {items.map((p) => (
@@ -364,7 +325,7 @@ function Petals() {
             width: p.w,
             height: p.h,
             left: `${p.left}%`,
-            background: `hsl(${p.hue},80%,${p.light}%)`,
+            background: `hsl(${p.hue}, 80%, ${p.light}%)`,
             transform: `rotate(${p.rot}deg)`,
             animationDuration: `${p.duration}s`,
             animationDelay: `${p.delay}s`,
@@ -374,27 +335,6 @@ function Petals() {
     </div>
   );
 }
-
-const CONFETTI_COLORS = [
-  "#e8446e",
-  "#ff9bb5",
-  "#ffb3cc",
-  "#c0244e",
-  "#ffd6e3",
-  "#ff6b9d",
-  "#fff0f5",
-  "#f5c842",
-];
-const CONFETTI_DIVINE = [
-  "#f5c842",
-  "#fff8e7",
-  "#ffd6a0",
-  "#ffe4b5",
-  "#ff9bb5",
-  "#fff0f5",
-  "#e8d4a8",
-  "#ffffff",
-];
 
 function Confetti({ pieces }) {
   if (!pieces.length) return null;
@@ -419,8 +359,44 @@ function Confetti({ pieces }) {
   );
 }
 
+const CONFETTI_COLORS = [
+  "#e8446e",
+  "#ff9bb5",
+  "#ffb3cc",
+  "#c0244e",
+  "#ffd6e3",
+  "#ff6b9d",
+  "#fff0f5",
+  "#f5c842",
+];
+
+/** Rich gold / starlight for “divine” moments */
+const CONFETTI_DIVINE = [
+  "#f5c842",
+  "#fff8e7",
+  "#ffd6a0",
+  "#ffe4b5",
+  "#ff9bb5",
+  "#fff0f5",
+  "#e8d4a8",
+  "#ffffff",
+];
+
+const WISH_PILL_MESSAGES = [
+  "Your name is the shape my prayers take. ♡",
+  "If I could name one star, it would be yours. ✦",
+  "In every world I’d still find the road back to you.",
+  "This love isn’t a feeling — it’s a law of my universe. ♡",
+  "The night sky learned how to smile when it saw you. ✦",
+  "Forever is only the first word. The rest I whisper to you. ♡",
+];
+
+const SECRET_ROSE_BLESSING =
+  "You weren’t just meant to be held — you were meant to be held like this, like forever isn’t long enough. ✦";
+
 function useConfetti() {
   const [confettiPieces, setConfettiPieces] = useState([]);
+
   const triggerConfetti = useCallback((variant = "romantic") => {
     const colors = variant === "divine" ? CONFETTI_DIVINE : CONFETTI_COLORS;
     const n = variant === "divine" ? 64 : 50;
@@ -440,6 +416,7 @@ function useConfetti() {
     );
     setTimeout(() => setConfettiPieces([]), 3800);
   }, []);
+
   return { confettiPieces, triggerConfetti };
 }
 
@@ -502,11 +479,12 @@ function Reveal({
     ob.observe(el);
     return () => ob.disconnect();
   }, []);
+  const st = { ...style, ...(delay ? { transitionDelay: `${delay}ms` } : {}) };
   return (
     <Comp
       ref={ref}
       className={`reveal${on ? " reveal--in" : ""} ${className}`.trim()}
-      style={{ ...style, ...(delay ? { transitionDelay: `${delay}ms` } : {}) }}
+      style={st}
     >
       {children}
     </Comp>
@@ -517,16 +495,21 @@ function ScratchCanvas() {
   const canvasRef = useRef(null);
   const revealedRef = useRef(false);
   const [faded, setFaded] = useState(false);
+
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
+
     const ctx = canvas.getContext("2d");
+    if (!ctx) return undefined;
+
     let scratching = false;
     revealedRef.current = false;
+
     function drawLayer() {
-      const w = canvas.offsetWidth || 290,
-        h = canvas.offsetHeight || 92;
-      if (!w || !h) return;
+      const w = canvas.offsetWidth || 290;
+      const h = canvas.offsetHeight || 92;
+      if (w === 0 || h === 0) return;
       canvas.width = w;
       canvas.height = h;
       ctx.fillStyle = "#5a1636";
@@ -536,16 +519,19 @@ function ScratchCanvas() {
       ctx.textAlign = "center";
       ctx.fillText("✦  scratch me  ✦", w / 2, h / 2 + 5);
     }
+
     const t = setTimeout(drawLayer, 100);
     const ro = new ResizeObserver(() => {
       if (!revealedRef.current) drawLayer();
     });
     if (canvas.parentElement) ro.observe(canvas.parentElement);
+
     function getPos(e) {
-      const r = canvas.getBoundingClientRect(),
-        src = e.touches ? e.touches[0] : e;
+      const r = canvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
       return [src.clientX - r.left, src.clientY - r.top];
     }
+
     function scratch(x, y) {
       if (revealedRef.current) return;
       ctx.globalCompositeOperation = "destination-out";
@@ -554,12 +540,15 @@ function ScratchCanvas() {
       ctx.fill();
       const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       let cleared = 0;
-      for (let i = 3; i < d.length; i += 4) if (d[i] < 128) cleared++;
+      for (let i = 3; i < d.length; i += 4) {
+        if (d[i] < 128) cleared += 1;
+      }
       if (cleared / (canvas.width * canvas.height) > 0.45) {
         revealedRef.current = true;
         setFaded(true);
       }
     }
+
     const onDown = (e) => {
       scratching = true;
       scratch(...getPos(e));
@@ -570,35 +559,38 @@ function ScratchCanvas() {
     const onUp = () => {
       scratching = false;
     };
-    const onTS = (e) => {
+    const onTouchStart = (e) => {
       e.preventDefault();
       scratching = true;
       scratch(...getPos(e));
     };
-    const onTM = (e) => {
+    const onTouchMove = (e) => {
       e.preventDefault();
       if (scratching) scratch(...getPos(e));
     };
-    const onTE = () => {
+    const onTouchEnd = () => {
       scratching = false;
     };
+
     canvas.addEventListener("mousedown", onDown);
     canvas.addEventListener("mousemove", onMove);
     canvas.addEventListener("mouseup", onUp);
-    canvas.addEventListener("touchstart", onTS, { passive: false });
-    canvas.addEventListener("touchmove", onTM, { passive: false });
-    canvas.addEventListener("touchend", onTE);
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd);
+
     return () => {
       clearTimeout(t);
       ro.disconnect();
       canvas.removeEventListener("mousedown", onDown);
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseup", onUp);
-      canvas.removeEventListener("touchstart", onTS);
-      canvas.removeEventListener("touchmove", onTM);
-      canvas.removeEventListener("touchend", onTE);
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
     };
   }, []);
+
   return (
     <canvas
       ref={canvasRef}
@@ -610,13 +602,17 @@ function ScratchCanvas() {
 
 function WheelSvg({ wheelRot, transition }) {
   const slices = useMemo(() => buildWheelSlices(), []);
+
   return (
     <svg
       className="wheel-svg"
       width={SIZE}
       height={SIZE}
       viewBox={`0 0 ${SIZE} ${SIZE}`}
-      style={{ transform: `rotate(${wheelRot}deg)`, transition }}
+      style={{
+        transform: `rotate(${wheelRot}deg)`,
+        transition,
+      }}
     >
       <circle
         cx={cx}
@@ -667,286 +663,17 @@ function WheelSvg({ wheelRot, transition }) {
   );
 }
 
-// ─── QUIZ GAME ────────────────────────────────────────────────────────────────
-function QuizGame({ triggerConfetti }) {
-  const [qIdx, setQIdx] = useState(0);
-  const [chosen, setChosen] = useState(null);
-  const [score, setScore] = useState(0);
-  const [done, setDone] = useState(false);
-
-  const q = QUIZ_QUESTIONS[qIdx];
-
-  const answer = (i) => {
-    if (chosen !== null) return;
-    setChosen(i);
-    const correct = i === q.correct;
-    if (correct) {
-      setScore((s) => s + 1);
-      triggerConfetti();
-    }
-    setTimeout(() => {
-      if (qIdx + 1 >= QUIZ_QUESTIONS.length) {
-        setDone(true);
-        triggerConfetti("divine");
-      } else {
-        setQIdx((n) => n + 1);
-        setChosen(null);
-      }
-    }, 1800);
-  };
-
-  const reset = () => {
-    setQIdx(0);
-    setChosen(null);
-    setScore(0);
-    setDone(false);
-  };
-
-  if (done) {
-    return (
-      <div className="quiz-done">
-        <p className="quiz-done-emoji">🎉</p>
-        <p className="quiz-done-title">
-          You got {score}/{QUIZ_QUESTIONS.length}!
-        </p>
-        <p className="quiz-done-sub">
-          {score === QUIZ_QUESTIONS.length
-            ? "Perfect score — just like you. ♡"
-            : "You know us better than any score can say. ♡"}
-        </p>
-        <button className="quiz-reset-btn" onClick={reset}>
-          play again ♡
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="quiz-wrap">
-      <p className="quiz-progress">
-        {qIdx + 1} / {QUIZ_QUESTIONS.length}
-      </p>
-      <p className="quiz-q">{q.q}</p>
-      <div className="quiz-opts">
-        {q.opts.map((opt, i) => {
-          let cls = "quiz-opt";
-          if (chosen !== null) {
-            if (i === q.correct) cls += " quiz-opt--correct";
-            else if (i === chosen) cls += " quiz-opt--wrong";
-            else cls += " quiz-opt--dim";
-          }
-          return (
-            <button
-              key={i}
-              className={cls}
-              onClick={() => answer(i)}
-              disabled={chosen !== null}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-      {chosen !== null && (
-        <p
-          className="quiz-feedback"
-          style={{
-            color: chosen === q.correct ? "var(--rose3)" : "var(--muted)",
-          }}
-        >
-          {chosen === q.correct ? q.win : q.lose}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ─── MEMORY MATCH GAME ────────────────────────────────────────────────────────
-const MATCH_ICONS = [img1, img2, img3, img4, img5, img6, img7, img8];
-
-function MemoryMatch({ triggerConfetti }) {
-  const makeCards = useCallback(
-    () =>
-      [...MATCH_ICONS, ...MATCH_ICONS]
-        .sort(() => Math.random() - 0.5)
-        .map((icon, i) => ({ id: i, icon, flipped: false, matched: false })),
-    [],
-  );
-
-  const [cards, setCards] = useState(makeCards);
-  const [selected, setSelected] = useState([]);
-  const [moves, setMoves] = useState(0);
-  const [won, setWon] = useState(false);
-  const lockRef = useRef(false);
-
-  const flip = (id) => {
-    if (lockRef.current) return;
-    const card = cards.find((c) => c.id === id);
-    if (!card || card.flipped || card.matched) return;
-
-    const next = cards.map((c) => (c.id === id ? { ...c, flipped: true } : c));
-    const newSel = [...selected, { id, icon: card.icon }];
-    setCards(next);
-    setSelected(newSel);
-
-    if (newSel.length === 2) {
-      lockRef.current = true;
-      setMoves((m) => m + 1);
-      if (newSel[0].icon === newSel[1].icon) {
-        const matched = next.map((c) =>
-          newSel.find((s) => s.id === c.id) ? { ...c, matched: true } : c,
-        );
-        setTimeout(() => {
-          setCards(matched);
-          setSelected([]);
-          lockRef.current = false;
-          if (matched.every((c) => c.matched)) {
-            setWon(true);
-            triggerConfetti("divine");
-          }
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCards((prev) =>
-            prev.map((c) =>
-              newSel.find((s) => s.id === c.id) ? { ...c, flipped: false } : c,
-            ),
-          );
-          setSelected([]);
-          lockRef.current = false;
-        }, 900);
-      }
-    }
-  };
-
-  const reset = () => {
-    setCards(makeCards());
-    setSelected([]);
-    setMoves(0);
-    setWon(false);
-  };
-
-  return (
-    <div className="match-wrap">
-      <p className="match-info">
-        {won ? `🎉 You won in ${moves} moves!` : `moves: ${moves}`}
-      </p>
-      {won ? (
-        <div className="match-won">
-          <p className="match-won-text">
-            You matched every heart — just like us. ♡
-          </p>
-          <button className="quiz-reset-btn" onClick={reset}>
-            play again ♡
-          </button>
-        </div>
-      ) : (
-        <div className="match-grid">
-          {cards.map((c) => (
-            <div
-              key={c.id}
-              className={`match-card${c.flipped || c.matched ? " match-card--face" : ""}${c.matched ? " match-card--matched" : ""}`}
-              onClick={() => flip(c.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && flip(c.id)}
-              aria-label={c.flipped || c.matched ? c.icon : "face down card"}
-            >
-              <div className="match-card-inner">
-                <div className="match-card-back">♡</div>
-                <div className="match-card-front">
-                  <img
-                    src={c.icon}
-                    alt=""
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "10px",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── PHOTO GALLERY ────────────────────────────────────────────────────────────
-function PhotoGallery({ photos }) {
-  const [active, setActive] = useState(null);
-  if (!photos || !photos.length) return null;
-  return (
-    <>
-      <Reveal as="section" className="card" delay={130}>
-        <span className="card-label">our story in pictures</span>
-        <div className="photo-grid">
-          {photos.map((p, i) => (
-            <div
-              key={i}
-              className="photo-thumb-wrap"
-              onClick={() => setActive(p)}
-            >
-              <img
-                src={p.src}
-                alt={p.caption || "Our memory"}
-                className="photo-thumb"
-                loading="lazy"
-              />
-              {p.caption && <p className="photo-thumb-caption">{p.caption}</p>}
-            </div>
-          ))}
-        </div>
-      </Reveal>
-      {active && (
-        <div className="photo-lightbox" onClick={() => setActive(null)}>
-          <div
-            className="photo-lightbox-inner"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={active.src}
-              alt={active.caption || ""}
-              className="photo-lightbox-img"
-            />
-            {active.caption && (
-              <p className="photo-lightbox-caption">{active.caption}</p>
-            )}
-            <button
-              className="photo-lightbox-close"
-              onClick={() => setActive(null)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN INNER COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 function BirthdaySurpriseInner() {
   const { confettiPieces, triggerConfetti } = useConfetti();
 
   const [envOpened, setEnvOpened] = useState(false);
   const [showLetter, setShowLetter] = useState(false);
+
   const [balloonPhase, setBalloonPhase] = useState({});
   const [poppedCount, setPoppedCount] = useState(0);
   const msgCursorRef = useRef(0);
   const [popup, setPopup] = useState(null);
-  const [heroIn, setHeroIn] = useState(false);
-  const [divineToast, setDivineToast] = useState(null);
-  const roseBlessTimer = useRef(null);
-  const skipNextRoseTap = useRef(false);
 
-  // Meter state
   const [meterPhase, setMeterPhase] = useState("idle");
   const [meterWidth, setMeterWidth] = useState(0);
   const [showMeterPct, setShowMeterPct] = useState(false);
@@ -958,8 +685,8 @@ function BirthdaySurpriseInner() {
   const [meterBtnDisabled, setMeterBtnDisabled] = useState(false);
   const meterIntervalRef = useRef(null);
   const meterMessageIndexRef = useRef(0);
+  const wheelPrizeIndexRef = useRef(0);
 
-  // Wheel state
   const [wheelRot, setWheelRot] = useState(0);
   const [wheelTransition, setWheelTransition] = useState("none");
   const [wheelSpinning, setWheelSpinning] = useState(false);
@@ -967,7 +694,10 @@ function BirthdaySurpriseInner() {
   const [wheelPrize, setWheelPrize] = useState(WHEEL_PRIZE_MESSAGES[0]);
   const [spinBtnText, setSpinBtnText] = useState("spin the wheel ♡");
   const wheelTotalRotRef = useRef(0);
-  const wheelPrizeIndexRef = useRef(0);
+  const [heroIn, setHeroIn] = useState(false);
+  const [divineToast, setDivineToast] = useState(null);
+  const roseBlessTimer = useRef(null);
+  const skipNextRoseTap = useRef(false);
 
   const clearRoseBless = useCallback(() => {
     if (roseBlessTimer.current) {
@@ -975,6 +705,7 @@ function BirthdaySurpriseInner() {
       roseBlessTimer.current = null;
     }
   }, []);
+
   const onRoseBlessStart = useCallback(() => {
     clearRoseBless();
     roseBlessTimer.current = setTimeout(() => {
@@ -987,9 +718,12 @@ function BirthdaySurpriseInner() {
       }, 500);
     }, 1700);
   }, [clearRoseBless, triggerConfetti]);
+
   const onRoseQuickTap = useCallback(() => {
-    if (!skipNextRoseTap.current) triggerConfetti();
+    if (skipNextRoseTap.current) return;
+    triggerConfetti();
   }, [triggerConfetti]);
+
   const onRandomWish = useCallback(() => {
     setDivineToast(
       WISH_PILL_MESSAGES[Math.floor(Math.random() * WISH_PILL_MESSAGES.length)],
@@ -1003,11 +737,16 @@ function BirthdaySurpriseInner() {
     triggerConfetti();
     setTimeout(() => setShowLetter(true), 700);
   };
+
   const popBalloon = (i) => {
     if (balloonPhase[i] === "empty" || balloonPhase[i] === "burst") return;
+
     setBalloonPhase((p) => ({ ...p, [i]: "burst" }));
     setPoppedCount((c) => c + 1);
-    setTimeout(() => setBalloonPhase((p) => ({ ...p, [i]: "empty" })), 300);
+    setTimeout(() => {
+      setBalloonPhase((p) => ({ ...p, [i]: "empty" }));
+    }, 300);
+
     const msg = BALLOON_MSGS[msgCursorRef.current % BALLOON_MSGS.length];
     msgCursorRef.current += 1;
     setPopup(msg);
@@ -1020,11 +759,14 @@ function BirthdaySurpriseInner() {
       meterIntervalRef.current = null;
     }
   }, []);
+
   useEffect(() => () => clearMeter(), [clearMeter]);
+
   useEffect(() => {
     const id = requestAnimationFrame(() => setHeroIn(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
   useEffect(() => {
     if (!divineToast) return undefined;
     const t = setTimeout(() => setDivineToast(null), 5200);
@@ -1041,6 +783,7 @@ function BirthdaySurpriseInner() {
     setMeterBtnDisabled(true);
     setMeterBtnText("measuring our love…");
     setMeterStatusMode("measuring");
+
     let v = 0;
     meterIntervalRef.current = setInterval(() => {
       v += Math.random() * 6 + 3;
@@ -1052,12 +795,14 @@ function BirthdaySurpriseInner() {
         setMeterPhase("full-wait");
         setMeterBtnText("100%… wait… 👀");
         setMeterStatusMode("full-wait");
+
         setTimeout(() => {
           setMeterBroke(true);
           setMeterPhase("breaking");
           setMeterStatusMode("breaking");
           triggerConfetti();
         }, 380);
+
         setTimeout(() => {
           const idx =
             meterMessageIndexRef.current % METER_INFINITE_MESSAGES.length;
@@ -1081,7 +826,12 @@ function BirthdaySurpriseInner() {
   }, [clearMeter, triggerConfetti]);
 
   const handleMeterClick = () => {
-    if (["filling", "full-wait", "breaking"].includes(meterPhase)) return;
+    if (
+      meterPhase === "filling" ||
+      meterPhase === "full-wait" ||
+      meterPhase === "breaking"
+    )
+      return;
     if (meterPhase === "done") {
       setMeterWidth(0);
       setShowMeterPct(false);
@@ -1090,7 +840,9 @@ function BirthdaySurpriseInner() {
       setMeterStatusMode("hint");
       setMeterBtnText("measure our love ♡");
     }
-    if (meterPhase === "done" || meterPhase === "idle") runMeter();
+    if (meterPhase === "done" || meterPhase === "idle") {
+      runMeter();
+    }
   };
 
   const spinWheel = () => {
@@ -1099,14 +851,15 @@ function BirthdaySurpriseInner() {
     setShowWheelResult(false);
     setSpinBtnText("spinning… 🌀");
     setWheelTransition("transform 4.2s cubic-bezier(0.17,0.67,0.08,1)");
-    const TARGET_MOD = 8,
-      fullSpins = 6 + Math.floor(Math.random() * 3);
+    const TARGET_MOD = 8;
+    const fullSpins = 6 + Math.floor(Math.random() * 3);
     const currentMod = ((wheelTotalRotRef.current % 360) + 360) % 360;
     let extra = (TARGET_MOD - currentMod + 360) % 360;
     if (extra === 0) extra = 360;
     const newRot = wheelTotalRotRef.current + fullSpins * 360 + extra;
     wheelTotalRotRef.current = newRot;
     setWheelRot(newRot);
+
     setTimeout(() => {
       const pi = wheelPrizeIndexRef.current % WHEEL_PRIZE_MESSAGES.length;
       wheelPrizeIndexRef.current += 1;
@@ -1182,7 +935,6 @@ function BirthdaySurpriseInner() {
       )}
 
       <div className="page">
-        {/* ── HERO ── */}
         <div className={`hero${heroIn ? " hero--in" : ""}`}>
           <p className="hero-verse" aria-hidden>
             the universe left the best for last — you.
@@ -1210,7 +962,7 @@ function BirthdaySurpriseInner() {
           <h1 className="hero-title">
             Happy Birthday,
             <br />
-            <em>{HER_NAME}</em>
+            <em>My Love</em>
           </h1>
           <p className="hero-sub">
             Today the whole world celebrates the day you arrived in it — and I
@@ -1218,7 +970,6 @@ function BirthdaySurpriseInner() {
           </p>
         </div>
 
-        {/* ── ENVELOPE / LETTER ── */}
         <Reveal as="section" className="card" delay={50}>
           <span className="card-label">a letter from my heart</span>
           <div className="envelope-wrap">
@@ -1259,17 +1010,14 @@ function BirthdaySurpriseInner() {
           </div>
         </Reveal>
 
-        {/* ── PHOTO GALLERY (shows only if COUPLE_PHOTOS is filled in) ── */}
-        <PhotoGallery photos={COUPLE_PHOTOS} />
-
-        {/* ── BALLOONS ── */}
         <Reveal as="section" className="card" delay={90}>
           <span className="card-label">pop for love messages</span>
           <p className="balloon-hint">{balloonHintText}</p>
           <div className="balloons-row">
             {BALLOON_COLORS.map((color, i) => {
-              if (balloonPhase[i] === "empty")
+              if (balloonPhase[i] === "empty") {
                 return <div key={i} className="balloon-placeholder" />;
+              }
               return (
                 <div
                   key={i}
@@ -1280,7 +1028,9 @@ function BirthdaySurpriseInner() {
                   tabIndex={0}
                 >
                   <div
-                    className={`balloon-body${balloonPhase[i] === "burst" ? " burst" : ""}`}
+                    className={`balloon-body${
+                      balloonPhase[i] === "burst" ? " burst" : ""
+                    }`}
                     style={{ background: color }}
                   >
                     <div className="balloon-shine" />
@@ -1296,7 +1046,6 @@ function BirthdaySurpriseInner() {
           </div>
         </Reveal>
 
-        {/* ── SCRATCH CARD ── */}
         <Reveal as="section" className="card" delay={120}>
           <span className="card-label">scratch to reveal a secret</span>
           <div className="scratch-inner">
@@ -1310,22 +1059,6 @@ function BirthdaySurpriseInner() {
           </div>
         </Reveal>
 
-        {/* ── QUIZ GAME ── */}
-        <Reveal as="section" className="card" delay={100}>
-          <span className="card-label">how well do you know us? 💕</span>
-          <QuizGame triggerConfetti={triggerConfetti} />
-        </Reveal>
-
-        {/* ── MEMORY MATCH ── */}
-        <Reveal as="section" className="card" delay={110}>
-          <span className="card-label">match the love ♡</span>
-          <p className="wheel-sub" style={{ marginBottom: 14 }}>
-            flip the cards to find the pairs — just like we found each other
-          </p>
-          <MemoryMatch triggerConfetti={triggerConfetti} />
-        </Reveal>
-
-        {/* ── LOVE METER ── */}
         <Reveal as="section" className="card" delay={150}>
           <span className="card-label">love meter</span>
           <p className="meter-legend" aria-hidden>
@@ -1369,7 +1102,9 @@ function BirthdaySurpriseInner() {
                 </div>
               )}
               <div
-                className={`meter-bar${meterBarDone ? " done" : ""}${meterBroke ? " meter-burst" : ""}${meterBroke && meterStatusMode === "result" ? " meter-burst--glow" : ""}`}
+                className={`meter-bar${meterBarDone ? " done" : ""}${
+                  meterBroke ? " meter-burst" : ""
+                }${meterBroke && meterStatusMode === "result" ? " meter-burst--glow" : ""}`}
                 style={
                   meterBroke ? { width: "100%" } : { width: `${meterWidth}%` }
                 }
@@ -1462,7 +1197,6 @@ function BirthdaySurpriseInner() {
           </button>
         </Reveal>
 
-        {/* ── SPIN WHEEL ── */}
         <Reveal
           as="section"
           className="card"
@@ -1501,7 +1235,6 @@ function BirthdaySurpriseInner() {
           </button>
         </Reveal>
 
-        {/* ── REASONS ── */}
         <Reveal
           as="section"
           className="reasons-reveal"
@@ -1514,42 +1247,48 @@ function BirthdaySurpriseInner() {
           >
             reasons I love you
           </span>
-          {REASONS.map((r, i) => (
-            <div
-              key={r[0]}
-              className="reason-item"
-              style={{ animationDelay: `${i * 0.1}s` }}
-            >
-              <span className="reason-num">{r[0]}</span>
-              <p className="reason-text">{r[1]}</p>
-            </div>
-          ))}
-        </Reveal>
-
-        {/* ── MEMORY CARDS ── */}
-        <Reveal as="section" className="card" delay={110}>
-          <span className="card-label">our little world</span>
-          <div className="mem-grid">
-            {[
-              [
-                "🌅",
-                "Our sunrises",
-                "Every morning better because you're in it",
-              ],
-              ["🌙", "Late nights", "Talking about everything and nothing"],
-              ["☕", "Morning rituals", "Quiet moments that mean the world"],
-              ["✈️", "Adventures", "Everywhere is home with you beside me"],
-            ].map(([icon, title, desc]) => (
-              <div key={title} className="mem-card">
-                <span className="mem-icon">{icon}</span>
-                <p className="mem-title">{title}</p>
-                <p className="mem-desc">{desc}</p>
+          <div>
+            {REASONS.map((r, i) => (
+              <div
+                key={r[0]}
+                className="reason-item"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <span className="reason-num">{r[0]}</span>
+                <p className="reason-text">{r[1]}</p>
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* ── CELESTIAL QUOTE ── */}
+        <Reveal as="section" className="card" delay={110}>
+          <span className="card-label">our little world</span>
+          <div className="mem-grid">
+            <div className="mem-card">
+              <span className="mem-icon">🌅</span>
+              <p className="mem-title">Our sunrises</p>
+              <p className="mem-desc">
+                Every morning better because you&apos;re in it
+              </p>
+            </div>
+            <div className="mem-card">
+              <span className="mem-icon">🌙</span>
+              <p className="mem-title">Late nights</p>
+              <p className="mem-desc">Talking about everything and nothing</p>
+            </div>
+            <div className="mem-card">
+              <span className="mem-icon">☕</span>
+              <p className="mem-title">Morning rituals</p>
+              <p className="mem-desc">Quiet moments that mean the world</p>
+            </div>
+            <div className="mem-card">
+              <span className="mem-icon">✈️</span>
+              <p className="mem-title">Adventures</p>
+              <p className="mem-desc">Everywhere is home with you beside me</p>
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal as="div" className="celestial-reveal" delay={60}>
           <p className="celestial-note">
             <span className="celestial-ornament" aria-hidden>
@@ -1563,7 +1302,6 @@ function BirthdaySurpriseInner() {
           </p>
         </Reveal>
 
-        {/* ── FOOTER ── */}
         <Reveal as="footer" className="footer" delay={40}>
           <div className="footer-badge">
             <p style={{ fontSize: 20, fontWeight: 600 }}>🎂 Happy Birthday!</p>
@@ -1590,11 +1328,10 @@ function BirthdaySurpriseInner() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ROOT EXPORT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function BirthdaySurprise() {
   const unlocked = useUnlockState();
-  if (!unlocked) return <CountdownToBirthday />;
+  if (!unlocked) {
+    return <CountdownToBirthday />;
+  }
   return <BirthdaySurpriseInner />;
 }
